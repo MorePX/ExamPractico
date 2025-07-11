@@ -1,7 +1,7 @@
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import API_URL from "../services/api";
 
-const UserList = () => {
+const UserList = ({ newUser }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -20,6 +20,12 @@ const UserList = () => {
         fetchUsers();
     }, []);
 
+    useEffect(() => {
+        if (newUser) {
+            setUsers((prev) => [...prev, newUser]);
+        }
+    }, [newUser]);
+
     if (loading) return <div className="text-center">Cargando usuarios...</div>;
 
     return (
@@ -34,11 +40,11 @@ const UserList = () => {
                     </tr>
                 </thead>
                 <tbody>
-                    {users.map((users) => (
-                        <tr key={users.id} className="border-b hover:bg-gray-100">
-                            <td className="py-2 px-4">{users.id}</td>
-                            <td className="py-2 px-4">{users.name}</td>
-                            <td className="py-2 px-4">{users.email}</td>
+                    {users.map((user) => (
+                        <tr key={user.id} className="border-b hover:bg-gray-100">
+                            <td className="py-2 px-4">{user.id}</td>
+                            <td className="py-2 px-4">{user.name}</td>
+                            <td className="py-2 px-4">{user.email}</td>
                             <td className="py-2 px-4">
                                 <button className="text-blue-600 hover:underline mr-2">Editar</button>
                                 <button className="text-blue-600 hover:underline">Eliminar</button>

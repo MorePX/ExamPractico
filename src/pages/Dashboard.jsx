@@ -1,7 +1,10 @@
 import UserList from "../components/UserList";
+import UserForm from "../components/UserForm";
+import { useState } from "react";
 
 const Dashboard = () => {
     const user = JSON.parse(localStorage.getItem("user"));
+    const [newUser, setNewUser] = useState(null);
 
     const logout = () => {
         localStorage.removeItem("user");
@@ -20,8 +23,8 @@ const Dashboard = () => {
                 </button>
             </div>
 
-            <h2 className="text-xl font-semibold mb-4">Lista de Usuarios</h2>
-            <UserList />
+            <UserForm onUserCreated = {setNewUser} />
+            <UserList newUser = {newUser} />
         </div>
     );
 };
