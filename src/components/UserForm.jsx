@@ -39,6 +39,11 @@ const UserForm = ({ editingUser, cancelEdit, onUserCreated }) => {
 
         if (!validate()) return;
 
+        const confirmCreate = window.confirm(
+            editingUser ? '¿Estás seguro de que quieres actualizar este usuario?' : '¿Estás seguro de que quieres crear un nuevo usuario?'
+        );
+        if (!confirmCreate) return;
+
         try {
             if (editingUser) {
                 const res = await API_URL.put(`/users/${editingUser.id}`, { 

@@ -36,6 +36,20 @@ const UserList = ({ newOrUpdateUser, onEditUser }) => {
         }
     }, [newOrUpdateUser]);
 
+    const handleDelete = async (id) => {
+        const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar este usuario?");
+        if (!confirmDelete) return;
+
+        try {
+            await API_URL.delete(`/users/${id}`);
+            setUsers((prev) => prev.filter((u) => u.id !== id));
+            alert("Usuario eliminado correctamente");
+        } catch (err) {
+            alert("Error al eliminar el usuario. Inténtalo de nuevo.");
+            console.error(err);
+        }
+    };
+
     const filteredUsers = users.filter((u) => 
         `${u.name}${u.email}`.toLowerCase().includes(filter.toLowerCase())
     );
@@ -75,7 +89,13 @@ const UserList = ({ newOrUpdateUser, onEditUser }) => {
                                     >
                                         Editar
                                     </button>
-                                    {/* Eliminar vendrá después */}
+                                    
+                                    <button
+                                        onClick={() => handleDelete(user.id)}
+                                        className="text-red-600 hover:underline"
+                                    >
+                                        Eliminar
+                                    </button>
                                 </td>
                             </tr>
                         ))}
