@@ -1,97 +1,72 @@
-import { useEffect, useState } from "react";
-import API_URL from "../services/api";
+import { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import ConfirmModal from "./ConfirmModal";
+import SearchIcon from '@mui/icons-material/Search';
 
-const UserList = ({ newOrUpdateUser, onEditUser }) => {
-    const [users, setUsers] = useState([]);
+const UserList = ({ users, onDeleteUser }) => {
+    const navigate = useNavigate();
     const [filter, setFilter] = useState("");
-    const [loading, setLoading] = useState(true);
+    const [showModal, setShowModal] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
 
-    const fetchUsers = async () => {
-        try {
-            const res = await API_URL.get("/users");
-            setUsers(res.data);
-        } catch (error) {
-            console.error("Error al obtener los usuarios:", error);
-        } finally {
-            setLoading(false);
-        }
+    const confirmDelete = (id) => {
+        setUserToDelete(id);
+        setShowModal(true);
     };
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
-
-    useEffect(() => {
-        if (Array.isArray(newOrUpdateUser) && newOrUpdateUser.length > 0) {
-            const merge = [...users];
-            newOrUpdateUser.forEach((u) => {
-                const index = merge.findIndex((m) => m.id === u.id);
-                if (index !== -1){
-                    merge[index] = u;
-                } else {
-                    merge.push(u);
-                }
-            });
-            setUsers(merge);
-        }
-    }, [newOrUpdateUser]);
-
-    const handleDelete = async (id) => {
-        const confirmDelete = window.confirm("¿Estás seguro de que quieres eliminar este usuario?");
-        if (!confirmDelete) return;
-
-        try {
-            await API_URL.delete(`/users/${id}`);
-            setUsers((prev) => prev.filter((u) => u.id !== id));
-            alert("Usuario eliminado correctamente");
-        } catch (err) {
-            alert("Error al eliminar el usuario. Inténtalo de nuevo.");
-            console.error(err);
-        }
+    const handleConfirmedDelete = () => {
+        onDeleteUser(userToDelete);
+        setShowModal(false);
+        setUserToDelete(null);
     };
 
-    const filteredUsers = users.filter((u) => 
+    const filteredUsers = users.filter((u) =>
         `${u.name}${u.email}`.toLowerCase().includes(filter.toLowerCase())
     );
 
-    if (loading) return <div className="text-center">Cargando usuarios...</div>;
-
     return (
         <div className="mt-6">
-            <input
-                type="text"
-                className="border px-3 py-2 rounded w-full max-w-md mb-4"
-                placeholder="Buscar por nombre o correo"
-                value={filter}
-                onChange={(e) => setFilter(e.target.value)}
-            />
+            <div className="relative w-full max-w-md mb-4">
+                <SearchIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <input
+                    type="text"
+                    placeholder="Buscar por nombre o correo"
+                    value={filter}
+                    onChange={(e) => setFilter(e.target.value)}
+                    className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-300 transition-all"
+                />
+            </div>
 
-            <div className="overflow-x-auto shadow">
-                <table className="min-w-full bg-white border rounded-lg">
+            <div className="overflow-x-auto shadow rounded-lg">
+                <table className="min-w-full bg-white rounded-lg border">
                     <thead>
-                        <tr className="bg-blue-500 text-white text-left">
-                            <th className="py-2 px-4">ID</th>
-                            <th className="py-2 px-4">Nombre</th>
-                            <th className="py-2 px-4">Correo</th>
-                            <th className="py-2 px-4">Acciones</th>
+                        <tr className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white text-left">
+                            <th className="py-3 px-5">ID</th>
+                            <th className="py-3 px-5">Nombre</th>
+                            <th className="py-3 px-5">Correo</th>
+                            <th className="py-3 px-5">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {filteredUsers.map((user) => (
-                            <tr key={user.id} className="border-b hover:bg-gray-100">
-                                <td className="py-2 px-4">{user.id}</td>
-                                <td className="py-2 px-4">{user.name}</td>
-                                <td className="py-2 px-4">{user.email}</td>
-                                <td className="py-2 px-4">
+                        {filteredUsers.map((user, i) => (
+                            <tr
+                                key={user.id}
+                                className={`${
+                                    i % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                } border-b hover:bg-blue-50 transition-colors`}
+                            >
+                                <td className="py-3 px-5">{user.id}</td>
+                                <td className="py-3 px-5">{user.name}</td>
+                                <td className="py-3 px-5">{user.email}</td>
+                                <td className="py-3 px-5 space-x-2">
                                     <button
-                                        onClick={() => onEditUser(user)}
-                                        className="text-blue-600 hover:underline mr-2"
+                                        onClick={() => navigate(`/edit/${user.id}`)}
+                                        className="text-blue-600 hover:underline transition-all"
                                     >
                                         Editar
                                     </button>
-                                    
                                     <button
-                                        onClick={() => handleDelete(user.id)}
+                                        onClick={() => confirmDelete(user.id)}
                                         className="text-red-600 hover:underline"
                                     >
                                         Eliminar
@@ -102,6 +77,13 @@ const UserList = ({ newOrUpdateUser, onEditUser }) => {
                     </tbody>
                 </table>
             </div>
+            <ConfirmModal
+                isOpen={showModal}
+                title="Confirmar eliminación"
+                message="¿Deseas eliminar este usuario?"
+                onConfirm={handleConfirmedDelete}
+                onCancel={() => setShowModal(false)}
+            />
         </div>
     );
 };
