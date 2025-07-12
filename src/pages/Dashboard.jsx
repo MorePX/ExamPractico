@@ -4,7 +4,8 @@ import { useState } from "react";
 
 const Dashboard = () => {
     const user = JSON.parse(localStorage.getItem("user"));
-    const [newUser, setNewUser] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [editingUser, setEditingUser] = useState([]);
 
     const logout = () => {
         localStorage.removeItem("user");
@@ -23,8 +24,27 @@ const Dashboard = () => {
                 </button>
             </div>
 
-            <UserForm onUserCreated = {setNewUser} />
-            <UserList newUser = {newUser} />
+            <UserForm
+                editingUser={selectedUser}
+                cancelEdit={() => setSelectedUser(null)}
+                onUserCreated={(userData) => {
+                    setEditingUser((prev) => {
+                        // Si el usuario ya existe, actualízalo
+                        const exists = prev.find(u => u.id === userData.id);
+                        if (exists) {
+                            return prev.map(u => u.id === userData.id ? userData : u);
+                        }
+                        // Si es nuevo, agrégalo
+                        return [...prev, userData];
+                    });
+                    setSelectedUser(null);
+                }}
+            />
+
+            <UserList
+                newOrUpdateUser = {editingUser}
+                onEditUser = {(user) => setSelectedUser(user)}
+            />
         </div>
     );
 };
