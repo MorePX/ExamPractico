@@ -29,12 +29,10 @@ const Dashboard = () => {
                 cancelEdit={() => setSelectedUser(null)}
                 onUserCreated={(userData) => {
                     setEditingUser((prev) => {
-                        // Si el usuario ya existe, actualízalo
                         const exists = prev.find(u => u.id === userData.id);
                         if (exists) {
                             return prev.map(u => u.id === userData.id ? userData : u);
                         }
-                        // Si es nuevo, agrégalo
                         return [...prev, userData];
                     });
                     setSelectedUser(null);
