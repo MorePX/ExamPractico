@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import API_URL from "../services/api";
 
-const UserList = ({ newUser }) => {
+const UserList = ({ newOrUpdateUser, onEditUser }) => {
     const [users, setUsers] = useState([]);
+    const [filter, setFilter] = useState("");
     const [loading, setLoading] = useState(true);
 
     const fetchUsers = async () => {
@@ -21,38 +22,66 @@ const UserList = ({ newUser }) => {
     }, []);
 
     useEffect(() => {
-        if (newUser) {
-            setUsers((prev) => [...prev, newUser]);
+        if (Array.isArray(newOrUpdateUser) && newOrUpdateUser.length > 0) {
+            const merge = [...users];
+            newOrUpdateUser.forEach((u) => {
+                const index = merge.findIndex((m) => m.id === u.id);
+                if (index !== -1){
+                    merge[index] = u;
+                } else {
+                    merge.push(u);
+                }
+            });
+            setUsers(merge);
         }
-    }, [newUser]);
+    }, [newOrUpdateUser]);
+
+    const filteredUsers = users.filter((u) => 
+        `${u.name}${u.email}`.toLowerCase().includes(filter.toLowerCase())
+    );
 
     if (loading) return <div className="text-center">Cargando usuarios...</div>;
 
     return (
-        <div className="overflow-x-auto shadow mt-6">
-            <table className="min-w-full bg-white border rounded-lg">
-                <thead>
-                    <tr className="bg-blue-500 text-white text-left">
-                        <th className="py-2 px-4">ID</th>
-                        <th className="py-2 px-4">Nombre</th>
-                        <th className="py-2 px-4">Correo</th>
-                        <th className="py-2 px-4">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {users.map((user) => (
-                        <tr key={user.id} className="border-b hover:bg-gray-100">
-                            <td className="py-2 px-4">{user.id}</td>
-                            <td className="py-2 px-4">{user.name}</td>
-                            <td className="py-2 px-4">{user.email}</td>
-                            <td className="py-2 px-4">
-                                <button className="text-blue-600 hover:underline mr-2">Editar</button>
-                                <button className="text-blue-600 hover:underline">Eliminar</button>
-                            </td>
+        <div className="mt-6">
+            <input
+                type="text"
+                className="border px-3 py-2 rounded w-full max-w-md mb-4"
+                placeholder="Buscar por nombre o correo"
+                value={filter}
+                onChange={(e) => setFilter(e.target.value)}
+            />
+
+            <div className="overflow-x-auto shadow">
+                <table className="min-w-full bg-white border rounded-lg">
+                    <thead>
+                        <tr className="bg-blue-500 text-white text-left">
+                            <th className="py-2 px-4">ID</th>
+                            <th className="py-2 px-4">Nombre</th>
+                            <th className="py-2 px-4">Correo</th>
+                            <th className="py-2 px-4">Acciones</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {filteredUsers.map((user) => (
+                            <tr key={user.id} className="border-b hover:bg-gray-100">
+                                <td className="py-2 px-4">{user.id}</td>
+                                <td className="py-2 px-4">{user.name}</td>
+                                <td className="py-2 px-4">{user.email}</td>
+                                <td className="py-2 px-4">
+                                    <button
+                                        onClick={() => onEditUser(user)}
+                                        className="text-blue-600 hover:underline mr-2"
+                                    >
+                                        Editar
+                                    </button>
+                                    {/* Eliminar vendrá después */}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
