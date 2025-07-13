@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { auth } from "../services/auth";
 import ConfirmModal from "./ConfirmModal";
 import SearchIcon from '@mui/icons-material/Search';
 
@@ -8,6 +9,10 @@ const UserList = ({ allUsers, currentPageUsers, onDeleteUser }) => {
     const [filter, setFilter] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [userToDelete, setUserToDelete] = useState(null);
+
+    // Verificar si el usuario puede editar y eliminar
+    const canEdit = (userId) => auth.isOwner(userId) || userId <= 10; // Permitir editar usuarios de API o propios
+    const canDelete = (userId) => auth.isOwner(userId); // Solo puede eliminar sus propios usuarios
 
     const confirmDelete = (id) => {
         setUserToDelete(id);
@@ -56,28 +61,21 @@ const UserList = ({ allUsers, currentPageUsers, onDeleteUser }) => {
                             </thead>
                             <tbody>
                                 {usersToDisplay.map((user, i) => (
-                                    <tr
-                                        key={user.id}
-                                        className={`${
-                                            i % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                                        } border-b hover:bg-blue-50 transition-colors`}
-                                    >
+                                    <tr key={user.id} className={`${i % 2 === 0 ? 'bg-gray-50' : 'bg-white'} border-b hover:bg-blue-50 transition-colors`}>
                                         <td className="py-3 px-5">{user.id}</td>
                                         <td className="py-3 px-5">{user.name}</td>
                                         <td className="py-3 px-5">{user.email}</td>
                                         <td className="py-3 px-5 space-x-2">
-                                            <button
-                                                onClick={() => navigate(`/edit/${user.id}`)}
-                                                className="text-blue-600 hover:underline transition-all"
-                                            >
-                                                Editar
-                                            </button>
-                                            <button
-                                                onClick={() => confirmDelete(user.id)}
-                                                className="text-red-600 hover:underline"
-                                            >
-                                                Eliminar
-                                            </button>
+                                            {canEdit(user.id) && (
+                                                <button onClick={() => navigate(`/edit/${user.id}`)} className="text-blue-600 hover:underline transition-all">
+                                                    Editar
+                                                </button>
+                                            )}
+                                            {canDelete(user.id) && (
+                                                <button onClick={() => confirmDelete(user.id)} className="text-red-600 hover:underline">
+                                                    Eliminar
+                                                </button>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

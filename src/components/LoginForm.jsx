@@ -1,5 +1,6 @@
 import { useState } from "react";
 import usersData from "../data/user.json";
+import { auth } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
@@ -12,19 +13,21 @@ const LoginForm = () => {
 
     const handleLogin = (e) => {
         e.preventDefault();
+        setError('');
+        
+        if (!email || !password) {
+            setError('Todos los campos son obligatorios');
+            return;
+        }
 
-        const user = usersData.find(
-            (user) => user.email === email && user.password === password
-        )
-
-        if (user) {
-            localStorage.setItem("user", JSON.stringify(user));
-            navigate("/welcome");
+        const success = auth.login(email, password);
+        if (success) {
+            navigate('/welcome');
         } else {
-            setError("Credenciales inválidas, intenta de nuevo.");
+            setError('Credenciales incorrectas');
         }
     };
-
+    
     return (
         <form
             onSubmit={handleLogin}

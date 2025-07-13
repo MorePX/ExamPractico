@@ -1,21 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import LockIcon from "@mui/icons-material/Lock";
 
 const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, allUsers = []}) => {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
     const validate = () => {
-        if (!name || !email) {
+        if (!name || !email || !password) {
             setError('Todos los campos son obligatorios');
             return false;
         }
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El email no es válido');
+            return false;
+        }
+        if (password.length < 6) {
+            setError('La contraseña debe tener al menos 6 caracteres');
             return false;
         }
         return true;
@@ -38,6 +44,7 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
         if (editingUser) {
             setName(editingUser.name);
             setEmail(editingUser.email);
+            setPassword(editingUser.password || '');
         }
     }, [editingUser]);
 
@@ -53,13 +60,13 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
             if (isLocalUser) {
                 const users = JSON.parse(localStorage.getItem("users")) || [];
                 const updatedUsers = users.map((u) =>
-                    u.id === editingUser.id ? { ...u, name, email } : u
+                    u.id === editingUser.id ? { ...u, name, email, password } : u
                 );
                 localStorage.setItem("users", JSON.stringify(updatedUsers));
                 setSuccess('Usuario actualizado correctamente.');
             } else {
                 const users = JSON.parse(localStorage.getItem("users")) || [];
-                const updatedUser = { ...editingUser, name, email };
+                const updatedUser = { ...editingUser, name, email, password };
                 
                 const filteredUsers = users.filter(u => u.id !== editingUser.id);
                 
@@ -68,17 +75,16 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
                 setSuccess('Cambios guardados localmente (los datos originales de la API no se modifican).');
             }
             
-            if (onUserCreated) onUserCreated({ ...editingUser, name, email });
+            if (onUserCreated) onUserCreated({ ...editingUser, name, email, password });
         } else {
             const users = JSON.parse(localStorage.getItem("users")) || [];
             const id = users.length ? Math.max(...users.map(u => u.id)) + 1 : 11;
-            const newUser = { id, name, email };
+            const newUser = { id, name, email, password };
             localStorage.setItem("users", JSON.stringify([...users, newUser]));
             setSuccess('Usuario creado exitosamente.');
             if (onUserCreated) onUserCreated(newUser);
         }
     };
-
 
     return (
         <form onSubmit={handleSubmit} className='bg-white p-6 rounded-lg drop-shadow-sm shadow-lg mb-6 max-w-xl mx-auto'>
@@ -109,12 +115,26 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
                     placeholder='example@example.com'
                 />
             </div>
-            <button
-                type='submit'
-                className='bg-green-700 text-white px-4 py-2 rounded hover:bg-green-400 transition-colors disabled:opacity-50'
-            >
-                {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
-            </button>
+            <div className='mb-4'>
+                <label className='block text-sm font-semibold mb-1'>Contraseña</label>
+                <div className="flex items-center border rounded px-3 py-2">
+                    <LockIcon className="text-gray-500 mr-2" />
+                    <input
+                        type="password"
+                        className="w-full outline-none flex"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Mínimo 6 caracteres"
+                    />
+                </div>
+            </div>
+            <div className="flex">
+                <button
+                    type='submit'
+                    className='bg-green-700 text-white px-4 py-2 rounded hover:bg-green-400 transition-colors disabled:opacity-50'
+                >
+                    {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+                </button>
                 <button
                     type='button'
                     onClick={onCancel}
@@ -122,6 +142,7 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
                 >
                     Cancelar
                 </button>
+            </div>
         </form>
     );
 };

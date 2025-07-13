@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import { auth } from '../services/auth';
 
 const WelcomePage = () => {
     const navigate = useNavigate();
     const [username, setUsername] = useState('');
 
     useEffect(() => {
-        const  user = JSON.parse(localStorage.getItem('user'));
+        const user = auth.getCurrentUser(); // Usamos el servicio auth
         if (!user) {
             navigate('/login');
         } else {

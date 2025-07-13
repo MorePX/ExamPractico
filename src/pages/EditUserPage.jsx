@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
+import { auth } from '../services/auth';
 import API_URL from '../services/api';
 import UserForm from '../components/UserForm';
 
@@ -20,6 +21,12 @@ const EditUserPage = () => {
         const localUsers = JSON.parse(localStorage.getItem("users")) || [];
         
         setAllUsers([...apiUsers, ...localUsers]);
+
+        if (!auth.isOwner(userId)) {
+          navigate('/users');
+          return;
+        }
+
 
         if (userId > 10) {
           setIsLocalUser(true);
