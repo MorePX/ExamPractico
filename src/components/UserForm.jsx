@@ -1,29 +1,18 @@
-import { useEffect, useState } from 'react';
-import API_URL from '../services/api';
+import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 
-const UserForm = ({ editingUser, cancelEdit, onUserCreated }) => {
+const UserForm = ({ onUserCreated, editingUser, isLocalUser = true }) => {
+    const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
-    const [success, setSuccess] = useState(false);
-
-    useEffect(() => {
-        if (editingUser) {
-            setName(editingUser.name);
-            setEmail(editingUser.email);
-        } else {
-            setName('');
-            setEmail('');
-        }
-    }, [editingUser]);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
 
     const validate = () => {
         if (!name || !email) {
             setError('Todos los campos son obligatorios');
             return false;
         }
-
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             setError('El email no es válido');
@@ -32,43 +21,54 @@ const UserForm = ({ editingUser, cancelEdit, onUserCreated }) => {
         return true;
     };
 
-    const handleSubmit = async (e) => {
+    useEffect(() => {
+        if (editingUser) {
+            setName(editingUser.name);
+            setEmail(editingUser.email);
+        }
+    }, [editingUser]);
+
+    const handleSubmit = (e) => {
         e.preventDefault();
         setError('');
         setSuccess('');
 
         if (!validate()) return;
 
-        const confirmCreate = window.confirm(
-            editingUser ? '¿Estás seguro de que quieres actualizar este usuario?' : '¿Estás seguro de que quieres crear un nuevo usuario?'
-        );
-        if (!confirmCreate) return;
-
-        try {
-            if (editingUser) {
-                const res = await API_URL.put(`/users/${editingUser.id}`, { 
-                    name, 
-                    email,
-                });
-
-                setSuccess('Usuario actualizado correctamente');
-                onUserCreated(res.data);
+        if (editingUser) {
+            if (isLocalUser) {
+                // Editar usuario - local
+                const users = JSON.parse(localStorage.getItem("users")) || [];
+                const updatedUsers = users.map((u) =>
+                    u.id === editingUser.id ? { ...u, name, email } : u
+                );
+                localStorage.setItem("users", JSON.stringify(updatedUsers));
+                setSuccess('Usuario actualizado correctamente.');
+                
+                if (onUserCreated) onUserCreated({ ...editingUser, name, email });
             } else {
-                const res = await API_URL.post('/users', { name, email });
-                setSuccess('Usuario creado exitosamente');
-                onUserCreated(res.data);
+                setSuccess('Los usuarios de demostración no pueden ser editados permanentemente.');
+                setTimeout(() => navigate("/users"), 1000);
+                return;
             }
-            setName('');
-            setEmail('');
-        } catch (err) {
-            setError('Error al guardar el usuario. Inténtalo de nuevo.');
-            console.error(err);
+        } else {
+            // Crear nuevo usuario - local
+            const users = JSON.parse(localStorage.getItem("users")) || [];
+            const id = users.length ? Math.max(...users.map(u => u.id)) + 1 : 11;
+            const newUser = { id, name, email };
+            localStorage.setItem("users", JSON.stringify([...users, newUser]));
+            setSuccess('Usuario creado exitosamente.');
+            if (onUserCreated) onUserCreated(newUser);
         }
+
+        setTimeout(() => navigate("/users"), 1000);
     };
 
     return (
         <form onSubmit={handleSubmit} className='bg-white p-6 rounded-lg drop-shadow-sm shadow-lg mb-6 max-w-xl mx-auto'>
-            <h2 className='text-xl font-bold mb-4'>{editingUser ? 'Editar usuario' : 'Crear nuevo usuario'}</h2>
+            <h2 className='text-xl font-bold mb-4'>
+                {editingUser ? 'Editar usuario' : 'Crear nuevo usuario'}
+            </h2>
 
             {error && <p className='text-red-500 text-sm mb-3'>{error}</p>}
             {success && <p className='text-green-500 text-sm mb-3'>{success}</p>}
@@ -83,7 +83,6 @@ const UserForm = ({ editingUser, cancelEdit, onUserCreated }) => {
                     placeholder='Nombre Completo'
                 />
             </div>
-
             <div className='mb-4'>
                 <label className='block text-sm font-semibold mb-1'>Email</label>
                 <input
@@ -94,25 +93,12 @@ const UserForm = ({ editingUser, cancelEdit, onUserCreated }) => {
                     placeholder='example@example.com'
                 />
             </div>
-
-            <div className='flex gap-2'>
-                <button
-                    type='submit'
-                    className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50'
-                >
-                    {editingUser ? 'Actualizar Usuario' : 'Crear Usuario'}
-                </button>
-
-                {editingUser && (
-                    <button
-                        type='button'
-                        onClick={cancelEdit}
-                        className='bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition-colors'
-                    >
-                        Cancelar
-                    </button>
-                )}
-            </div>
+            <button
+                type='submit'
+                className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50'
+            >
+                {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
+            </button>
         </form>
     );
 };
