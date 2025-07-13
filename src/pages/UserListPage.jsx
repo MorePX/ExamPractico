@@ -13,15 +13,22 @@ const UserListPage = () => {
         const res = await API_URL.get("/users");
         const apiUsers = res.data;
         const localUsers = JSON.parse(localStorage.getItem("users")) || [];
-        const combined = [
-          ...apiUsers,
-          ...localUsers.filter(
-            localUser => !apiUsers.some(apiUser => apiUser.id === localUser.id)
-          )
-        ];
+
+        // Reemplazar usuarios de la API (1-10) con sus versiones modificadas en localStorage
+        const combinedUsers = apiUsers.map(apiUser => {
+          const localVersion = localUsers.find(u => u.id === apiUser.id);
+          return localVersion || apiUser; // Usar la versión local si existe
+        });
+
+        // Agregar usuarios locales con ID > 10
+        const additionalLocalUsers = localUsers.filter(u => u.id > 10);
+        const combined = [...combinedUsers, ...additionalLocalUsers]
+          .sort((a, b) => a.id - b.id);
+
         setUsers(combined);
       } catch (error) {
-        setUsers(JSON.parse(localStorage.getItem("users")) || []);
+        console.error("Error fetching API users, using local only:", error);
+        setUsers(localUsers.sort((a, b) => a.id - b.id));
       }
     };
     fetchAndCombineUsers();
@@ -51,8 +58,12 @@ const UserListPage = () => {
 
   return (
     <div className="p-6 mt-20">
-      <h1 className="text-2xl font-bold mb-4 text-gray-700">Lista de Usuarios</h1>
-      <UserList users={users} onDeleteUser={handleDeleteUser} />
+      <h1 className="text-2xl font-bold mb-4 text-gray-700 text-center uppercase">Lista de Usuarios</h1>
+      <UserList 
+          users={users} 
+          onDeleteUser={handleDeleteUser} 
+          onUserUpdated={handleUserUpdated}
+      />
     </div>
   );
 };

@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 
-const UserForm = ({ onUserCreated, editingUser, isLocalUser = true }) => {
+const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, allUsers = []}) => {
     const navigate = useNavigate();
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -21,6 +21,19 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true }) => {
         return true;
     };
 
+    const validateEmailUnique = (currentEmail) => {
+        const emailExists = allUsers.some(user => {
+            if (editingUser && user.id === editingUser.id) return false;
+            return user.email === currentEmail;
+        });
+
+        if (emailExists) {
+            setError('El correo electrónico ya está en uso por otro usuario');
+            return false;
+        }
+        return true;
+    };
+
     useEffect(() => {
         if (editingUser) {
             setName(editingUser.name);
@@ -34,25 +47,29 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true }) => {
         setSuccess('');
 
         if (!validate()) return;
+        if (!validateEmailUnique(email)) return;
 
         if (editingUser) {
             if (isLocalUser) {
-                // Editar usuario - local
                 const users = JSON.parse(localStorage.getItem("users")) || [];
                 const updatedUsers = users.map((u) =>
                     u.id === editingUser.id ? { ...u, name, email } : u
                 );
                 localStorage.setItem("users", JSON.stringify(updatedUsers));
                 setSuccess('Usuario actualizado correctamente.');
-                
-                if (onUserCreated) onUserCreated({ ...editingUser, name, email });
             } else {
-                setSuccess('Los usuarios de demostración no pueden ser editados permanentemente.');
-                setTimeout(() => navigate("/users"), 1000);
-                return;
+                const users = JSON.parse(localStorage.getItem("users")) || [];
+                const updatedUser = { ...editingUser, name, email };
+                
+                const filteredUsers = users.filter(u => u.id !== editingUser.id);
+                
+                localStorage.setItem("users", JSON.stringify([...filteredUsers, updatedUser]));
+                
+                setSuccess('Cambios guardados localmente (los datos originales de la API no se modifican).');
             }
+            
+            if (onUserCreated) onUserCreated({ ...editingUser, name, email });
         } else {
-            // Crear nuevo usuario - local
             const users = JSON.parse(localStorage.getItem("users")) || [];
             const id = users.length ? Math.max(...users.map(u => u.id)) + 1 : 11;
             const newUser = { id, name, email };
@@ -60,9 +77,8 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true }) => {
             setSuccess('Usuario creado exitosamente.');
             if (onUserCreated) onUserCreated(newUser);
         }
-
-        setTimeout(() => navigate("/users"), 1000);
     };
+
 
     return (
         <form onSubmit={handleSubmit} className='bg-white p-6 rounded-lg drop-shadow-sm shadow-lg mb-6 max-w-xl mx-auto'>
@@ -95,10 +111,17 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true }) => {
             </div>
             <button
                 type='submit'
-                className='bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors disabled:opacity-50'
+                className='bg-green-700 text-white px-4 py-2 rounded hover:bg-green-400 transition-colors disabled:opacity-50'
             >
                 {editingUser ? 'Guardar Cambios' : 'Crear Usuario'}
             </button>
+                <button
+                    type='button'
+                    onClick={onCancel}
+                    className='bg-red-700 text-white px-4 py-2 rounded hover:bg-red-400 transition-colors flex-1 ml-5'
+                >
+                    Cancelar
+                </button>
         </form>
     );
 };

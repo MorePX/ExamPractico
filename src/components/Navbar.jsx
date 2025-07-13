@@ -30,7 +30,7 @@ const Navbar = () => {
                     <PersonAddAlt1Icon fontSize="small" />
                     Crear
                 </li>
-                <li className="flex items-center gap-1 px-2 py-1 rounded hover:bg-blue-100 hover:text-blue-700 cursor-pointer transition-all" onClick={logout}>
+                <li className="flex items-center gap-1 px-2 py-1 rounded hover:bg-red-100 hover:text-red-700 cursor-pointer transition-all" onClick={logout}>
                     <LogoutIcon fontSize="small" />
                     Cerrar sesión
                 </li>
