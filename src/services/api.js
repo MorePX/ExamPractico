@@ -21,7 +21,7 @@ export const updateUser = async (userId, userData) => {
     const response = await API_URL.put(`/users/${userId}`, userData);
     return response.data;
   } catch (error) {
-    console.error("Error updating user (simulated):", error);
+    console.error("Error al actualizar usuario (simulado):", error);
     return { ...userData, id: userId };
   }
 };
