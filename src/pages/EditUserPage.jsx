@@ -8,18 +8,22 @@ const EditUserPage = () => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [isLocalUser, setIsLocalUser] = useState(false);
+  const [allUsers, setAllUsers] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchUser = async () => {
+    const fetchData = async () => {
       try {
         const userId = parseInt(id);
+        const res = await API_URL.get("/users");
+        const apiUsers = res.data;
+        const localUsers = JSON.parse(localStorage.getItem("users")) || [];
         
+        setAllUsers([...apiUsers, ...localUsers]);
+
         if (userId > 10) {
           setIsLocalUser(true);
-          const localUsers = JSON.parse(localStorage.getItem("users")) || [];
           const localUser = localUsers.find(u => u.id === userId);
-          
           if (localUser) {
             setUserData(localUser);
           } else {
@@ -27,18 +31,18 @@ const EditUserPage = () => {
           }
         } else {
           setIsLocalUser(false);
-          const res = await API_URL.get(`/users/${userId}`);
-          setUserData(res.data);
+          const apiUser = apiUsers.find(u => u.id === userId);
+          setUserData(apiUser);
         }
       } catch (err) {
-        console.error('Error al obtener usuario');
+        console.error('Error al obtener usuario', err);
         navigate('/users');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchUser();
+    fetchData();
   }, [id, navigate]);
 
   const handleUserUpdated = (updatedUser) => {
@@ -56,6 +60,8 @@ const EditUserPage = () => {
             editingUser={userData} 
             isLocalUser={isLocalUser}
             onUserCreated={handleUserUpdated}
+            onCancel={() => navigate('/users')}
+            allUsers={allUsers}
           />
         )}
       </div>
