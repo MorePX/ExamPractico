@@ -1,77 +1,131 @@
 import { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import UserList from "../components/UserList";
 import Pagination from "../components/Pagination";
 import API_URL from "../services/api";
+import { auth } from "../services/auth";
 
 const UserListPage = () => {
-  const [allUsers, setAllUsers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(10);
+  const [allUsers, setAllUsers] = useState([]); // Todos los usuarios
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
+  const [usersPerPage] = useState(10); // Usuarios por página
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const location = useLocation();
 
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(allUsers.length / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage; // Índice del último usuario en la página actual
+  const indexOfFirstUser = indexOfLastUser - usersPerPage; // Índice del primer usuario en la página actual
+  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser); // Usuarios de la página actual
+  const totalPages = Math.ceil(allUsers.length / usersPerPage); // Total de páginas
 
+  // Verificar si el usuario está autenticado
   useEffect(() => {
     const fetchAndCombineUsers = async () => {
       try {
-        const res = await API_URL.get("/users");
-        const apiUsers = res.data;
+        setLoading(true);
+        
+        // Obtener usuarios de la API
+        const apiResponse = await API_URL.get("/users");
+        const apiUsers = apiResponse.data;
+
+        // Obtener usuarios predeterminados (de user.json)
+        const defaultUsers = JSON.parse(localStorage.getItem("defaultUsers")) || [];
+        
+        // Obtener usuarios creados localmente
         const localUsers = JSON.parse(localStorage.getItem("users")) || [];
 
-        const combinedUsers = apiUsers.map(apiUser => {
-          const localVersion = localUsers.find(u => u.id === apiUser.id);
-          return localVersion || apiUser;
-        });
+        /* Combinación:
+          Primero los ID de al API (1-10)
+          Luego usuarios predeterminados que no estén en la API
+          Finalmente usuarios locales (ID > 10)
+        */
+        const combinedUsers = [
+          ...apiUsers,
+          ...defaultUsers.filter(du => !apiUsers.some(au => au.id === du.id)),
+          ...localUsers
+        ].sort((a, b) => a.id - b.id);
 
-        const additionalLocalUsers = localUsers.filter(u => u.id > 10);
-        const combined = [...combinedUsers, ...additionalLocalUsers]
-          .sort((a, b) => a.id - b.id);
-
-        setAllUsers(combined); // <-- Actualizamos allUsers
-      } catch (error) {
-        console.error("Error fetching API users:", error);
+        setAllUsers(combinedUsers);
+        setError(null);
+      } catch (err) {
+        console.error("Error loading users:", err);
+        setError("Error al cargar usuarios de la API. Mostrando solo usuarios locales.");
+        
+        // Cargar solo usuarios locales y predeterminados
+        const defaultUsers = JSON.parse(localStorage.getItem("defaultUsers")) || [];
         const localUsers = JSON.parse(localStorage.getItem("users")) || [];
-        setAllUsers(localUsers.sort((a, b) => a.id - b.id));
+        setAllUsers([...defaultUsers, ...localUsers].sort((a, b) => a.id - b.id));
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchAndCombineUsers();
   }, [location.pathname]);
 
+  // Manejar la eliminación de usuarios
   const handleDeleteUser = (id) => {
+    // Solo permitir eliminar usuarios locales (ID > 10)
+    if (id <= 10) return;
+
     setAllUsers(prevUsers => {
       const updatedUsers = prevUsers.filter(u => u.id !== id);
       
-      if (id > 10) {
-        const localUsers = updatedUsers.filter(u => u.id > 10);
-        localStorage.setItem("users", JSON.stringify(localUsers));
-      }
+      // Actualizar localStorage
+      const localUsers = updatedUsers.filter(u => u.id > 10);
+      localStorage.setItem("users", JSON.stringify(localUsers));
       
       return updatedUsers;
     });
 
+    // Ajustar paginación
     if (currentUsers.length === 1 && currentPage > 1) {
       setCurrentPage(currentPage - 1);
     }
   };
 
+  // Manejar el cambio de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  if (loading) {
+    return (
+      <div className="p-6 mt-20 text-center">
+        <p>Cargando usuarios...</p>
+      </div>
+    );
+  }
+
+  // Si hay un error, mostrar mensaje y usuarios locales
+  if (error) {
+    return (
+      <div className="p-6 mt-20">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+          {error}
+        </div>
+        <UserList 
+          allUsers={allUsers}
+          currentPageUsers={currentUsers}
+          onDeleteUser={handleDeleteUser}
+        />
+      </div>
+    );
+  }
+
+  // Si no hay usuarios, mostrar mensaje
   return (
     <div className="p-6 mt-20">
-      <h1 className="text-2xl font-bold mb-4 text-gray-700 text-center uppercase">
-        Lista de Usuarios ({allUsers.length} total)
-      </h1>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold text-gray-700 uppercase">
+          Lista de Usuarios ({allUsers.length} total)
+        </h1>
+      </div>
       
       <UserList 
-        allUsers={allUsers} // <-- Pasamos todos los usuarios
-        currentPageUsers={currentUsers} // <-- Pasamos usuarios paginados
+        allUsers={allUsers}
+        currentPageUsers={currentUsers}
         onDeleteUser={handleDeleteUser}
       />
       

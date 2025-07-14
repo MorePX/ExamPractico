@@ -1,12 +1,50 @@
-# React + Vite
+# Gestor de Usuarios - React + Vite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)
+![JSON API](https://img.shields.io/badge/JSON%20API-000000?style=for-the-badge&logo=json&logoColor=white)
 
-Currently, two official plugins are available:
+Aplicación web para gestión de usuarios con autenticación y operaciones CRUD completas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Características principales
 
-## Expanding the ESLint configuration
+### 🔐 Autenticación
+- Sistema de login seguro
+- Protección de rutas privadas
+- Control de permisos básicos
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 👥 Gestión de usuarios
+- **Listado completo** con paginación
+- **Creación** mediante formularios validados
+- **Edición** de información de usuarios
+- **Eliminación** con confirmación
+- **Búsqueda** y filtrado de usuarios
+
+### ✨ UX Mejorada
+- Diseño 100% responsivo
+- Feedback visual para acciones
+- Animaciones fluidas
+- Validación en tiempo real
+
+## 🛠 Tecnologías utilizadas
+
+- **Frontend**: React 18
+- **Bundler**: Vite
+- **Estilos**: TailwindCSS
+- **HTTP Client**: Axios
+- **Routing**: React Router v6
+- **State Management**: Context API
+
+## 🌐 Api utilizada
+- https://jsonplaceholder.typicode.com
+- **GET**: /users
+- **POST**: /users
+- **PUT**: /users/:id
+- **DELETE**_ /users/:id
+
+## 📦 Instalación
+1. Clonar el repositorio: git clone [url-del-repositorio]
+
+## 🖥 Ejecutar proyecto
+- npm i
+- npm run dev

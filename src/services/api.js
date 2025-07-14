@@ -1,5 +1,6 @@
 import axios from 'axios';
 
+// API
 const API_URL = axios.create({
     baseURL: 'https://jsonplaceholder.typicode.com/',
     headers: {
@@ -8,6 +9,7 @@ const API_URL = axios.create({
     },
 });
 
+// Simular la actualización de usuario de forma local
 export const updateUser = async (userId, userData) => {
   if (userId > 10) {
     const users = JSON.parse(localStorage.getItem("users")) || [];
