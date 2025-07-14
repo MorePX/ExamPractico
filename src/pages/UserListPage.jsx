@@ -6,18 +6,19 @@ import API_URL from "../services/api";
 import { auth } from "../services/auth";
 
 const UserListPage = () => {
-  const [allUsers, setAllUsers] = useState([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [usersPerPage] = useState(10);
+  const [allUsers, setAllUsers] = useState([]); // Todos los usuarios
+  const [currentPage, setCurrentPage] = useState(1); // Página actual
+  const [usersPerPage] = useState(10); // Usuarios por página
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const location = useLocation();
 
-  const indexOfLastUser = currentPage * usersPerPage;
-  const indexOfFirstUser = indexOfLastUser - usersPerPage;
-  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser);
-  const totalPages = Math.ceil(allUsers.length / usersPerPage);
+  const indexOfLastUser = currentPage * usersPerPage; // Índice del último usuario en la página actual
+  const indexOfFirstUser = indexOfLastUser - usersPerPage; // Índice del primer usuario en la página actual
+  const currentUsers = allUsers.slice(indexOfFirstUser, indexOfLastUser); // Usuarios de la página actual
+  const totalPages = Math.ceil(allUsers.length / usersPerPage); // Total de páginas
 
+  // Verificar si el usuario está autenticado
   useEffect(() => {
     const fetchAndCombineUsers = async () => {
       try {
@@ -62,6 +63,7 @@ const UserListPage = () => {
     fetchAndCombineUsers();
   }, [location.pathname]);
 
+  // Manejar la eliminación de usuarios
   const handleDeleteUser = (id) => {
     // Solo permitir eliminar usuarios locales (ID > 10)
     if (id <= 10) return;
@@ -82,6 +84,7 @@ const UserListPage = () => {
     }
   };
 
+  // Manejar el cambio de página
   const handlePageChange = (page) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -95,6 +98,7 @@ const UserListPage = () => {
     );
   }
 
+  // Si hay un error, mostrar mensaje y usuarios locales
   if (error) {
     return (
       <div className="p-6 mt-20">
@@ -110,6 +114,7 @@ const UserListPage = () => {
     );
   }
 
+  // Si no hay usuarios, mostrar mensaje
   return (
     <div className="p-6 mt-20">
       <div className="flex justify-between items-center mb-4">

@@ -1,6 +1,7 @@
 import React from "react";
 
 const ConfirmModal = ({ isOpen, title, message, onConfirm, onCancel, confirmText = "Confirmar" }) => {
+    // Renderizar el modal solo si isOpen es true
     if (!isOpen) return null;
     return (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">

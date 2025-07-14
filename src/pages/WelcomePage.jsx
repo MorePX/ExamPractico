@@ -3,10 +3,12 @@ import { useEffect, useState } from 'react';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { auth } from '../services/auth';
 
+// Componente de la página de bienvenida
 const WelcomePage = () => {
     const navigate = useNavigate();
-    const [username, setUsername] = useState('');
+    const [username, setUsername] = useState(''); // Estado para almacenar el nombre de usuario
 
+    // Verificamos si el usuario está autenticado al cargar la página
     useEffect(() => {
         const user = auth.getCurrentUser(); // Usamos el servicio auth
         if (!user) {
@@ -16,6 +18,7 @@ const WelcomePage = () => {
         }
     }, [navigate]);
 
+    // Renderizamos la página de bienvenida
     return (
         <div className='min-h-screen bg-gradient-to-tr from-blue-200 to-indigo-300 flex items-center justify-center px-4'>
             <div className='bg-white/70 backfrop-blur-md shadow-xl p-10 rounded-3xl text-center max-w-xl w-full animate-fade-in'>

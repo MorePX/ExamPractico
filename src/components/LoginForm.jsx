@@ -5,22 +5,25 @@ import { useNavigate } from "react-router-dom";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
 
+// Componente de formulario de inicio de sesión
 const LoginForm = () => {
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
 
+    // Maneja el envío del formulario
     const handleLogin = (e) => {
         e.preventDefault();
         setError('');
         
+        // Validación simple de campos
         if (!email || !password) {
             setError('Todos los campos son obligatorios');
             return;
         }
 
-        const success = auth.login(email, password);
+        const success = auth.login(email, password); // Simula la autenticación
         if (success) {
             navigate('/welcome');
         } else {
@@ -28,6 +31,7 @@ const LoginForm = () => {
         }
     };
     
+    // Renderiza el formulario de inicio de sesión
     return (
         <form
             onSubmit={handleLogin}

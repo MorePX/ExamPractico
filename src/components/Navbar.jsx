@@ -4,6 +4,7 @@ import ListAltIcon from '@mui/icons-material/ListAlt';
 import PersonAddAlt1Icon from '@mui/icons-material/PersonAdd';
 import LogoutIcon from '@mui/icons-material/Logout';
 
+// Componente de Navbar
 const Navbar = () => {
     const navigate = useNavigate();
     const user = JSON.parse(localStorage.getItem('user'));

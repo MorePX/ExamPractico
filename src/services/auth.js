@@ -9,9 +9,11 @@ export const auth = {
     
     // Combinar ambos arrays de usuarios
     const allUsers = [...defaultUsers, ...localUsers];
-    
+
+    // Verificar si el usuario existe
     const user = allUsers.find(u => u.email === email && u.password === password);
     
+    // Si el usuario existe, guardar en currentUser y localStorage
     if (user) {
       this.currentUser = {
         id: user.id,
@@ -24,11 +26,13 @@ export const auth = {
     return false;
   },
 
+  // Cerrar sesión
   logout() {
     this.currentUser = null;
     localStorage.removeItem('user');
   },
 
+  // Obtener el usuario actual
   getCurrentUser() {
     if (!this.currentUser) {
       this.currentUser = JSON.parse(localStorage.getItem('user'));
@@ -36,6 +40,7 @@ export const auth = {
     return this.currentUser;
   },
 
+  // Verificar si el usuario está autenticado
   isOwner(userId) {
     const user = this.getCurrentUser();
     return user && user.id === userId;

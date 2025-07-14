@@ -4,32 +4,37 @@ import { auth } from "../services/auth";
 import ConfirmModal from "./ConfirmModal";
 import SearchIcon from '@mui/icons-material/Search';
 
+// Componente para mostrar la lista de usuarios
 const UserList = ({ allUsers, currentPageUsers, onDeleteUser }) => {
     const navigate = useNavigate();
-    const [filter, setFilter] = useState("");
+    const [filter, setFilter] = useState(""); // Estado para el filtro de búsqueda
     const [showModal, setShowModal] = useState(false);
-    const [userToDelete, setUserToDelete] = useState(null);
+    const [userToDelete, setUserToDelete] = useState(null); // Estado para el usuario a eliminar
 
     // Verificar si el usuario puede editar y eliminar
     const canEdit = (userId) => auth.isOwner(userId) || userId <= 10; // Permitir editar usuarios de API o propios
     const canDelete = (userId) => auth.isOwner(userId); // Solo puede eliminar sus propios usuarios
 
+    // Función para confirmar la eliminación de un usuario
     const confirmDelete = (id) => {
         setUserToDelete(id);
         setShowModal(true);
     };
 
+    // Función para manejar la confirmación de eliminación
     const handleConfirmedDelete = () => {
         onDeleteUser(userToDelete);
         setShowModal(false);
         setUserToDelete(null);
     };
 
+    // Filtrar usuarios según el filtro de búsqueda
     const usersToDisplay = filter 
         ? allUsers.filter(u => 
-            `${u.name}${u.email}`.toLowerCase().includes(filter.toLowerCase()))
+            `${u.name}${u.email}`.toLowerCase().includes(filter.toLowerCase())) // Filtrar por nombre o correo
         : currentPageUsers;
 
+    // Renderizar la lista de usuarios
     return (
         <div className="space-y-4">
             <div className="mt-6">

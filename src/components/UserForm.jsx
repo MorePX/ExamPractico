@@ -10,6 +10,7 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
 
+    // Validación de campos name, password, email y estructura del email
     const validate = () => {
         if (!name || !email || !password) {
             setError('Todos los campos son obligatorios');
@@ -27,6 +28,7 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
         return true;
     };
 
+    // Validación de email único (que no se repitan)
     const validateEmailUnique = (currentEmail) => {
         const emailExists = allUsers.some(user => {
             if (editingUser && user.id === editingUser.id) return false;
@@ -40,6 +42,7 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
         return true;
     };
 
+    // Cargar datos del usuario a editar si existe
     useEffect(() => {
         if (editingUser) {
             setName(editingUser.name);
@@ -48,6 +51,7 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
         }
     }, [editingUser]);
 
+    // Manejar el envío del formulario
     const handleSubmit = (e) => {
         e.preventDefault();
         setError('');
@@ -56,15 +60,16 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
         if (!validate()) return;
         if (!validateEmailUnique(email)) return;
 
+        // Si es un usuario local, actualizamos o creamos en localStorage
         if (editingUser) {
-            if (isLocalUser) {
+            if (isLocalUser) { // Actualizar usuario en localStorage
                 const users = JSON.parse(localStorage.getItem("users")) || [];
                 const updatedUsers = users.map((u) =>
                     u.id === editingUser.id ? { ...u, name, email, password } : u
                 );
                 localStorage.setItem("users", JSON.stringify(updatedUsers));
                 setSuccess('Usuario actualizado correctamente.');
-            } else {
+            } else { // Actualizar usuario en la API (simulado)
                 const users = JSON.parse(localStorage.getItem("users")) || [];
                 const updatedUser = { ...editingUser, name, email, password };
                 
@@ -77,15 +82,17 @@ const UserForm = ({ onUserCreated, editingUser, isLocalUser = true, onCancel, al
             
             if (onUserCreated) onUserCreated({ ...editingUser, name, email, password });
         } else {
+            // Crear nuevo usuario
             const users = JSON.parse(localStorage.getItem("users")) || [];
-            const id = users.length ? Math.max(...users.map(u => u.id)) + 1 : 11;
+            const id = users.length ? Math.max(...users.map(u => u.id)) + 1 : 11; // Comenzar ID desde 11 para evitar conflictos con usuarios preexistentes
             const newUser = { id, name, email, password };
-            localStorage.setItem("users", JSON.stringify([...users, newUser]));
+            localStorage.setItem("users", JSON.stringify([...users, newUser])); // Guardar nuevo usuario en localStorage
             setSuccess('Usuario creado exitosamente.');
             if (onUserCreated) onUserCreated(newUser);
         }
     };
-
+    
+    // Render del formulario
     return (
         <form onSubmit={handleSubmit} className='bg-white p-6 rounded-lg drop-shadow-sm shadow-lg mb-6 max-w-xl mx-auto'>
             <h2 className='text-xl font-bold mb-4'>

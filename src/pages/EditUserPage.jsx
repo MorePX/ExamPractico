@@ -5,14 +5,15 @@ import API_URL from '../services/api';
 import UserForm from '../components/UserForm';
 
 const EditUserPage = () => {
-  const { id } = useParams();
-  const [userData, setUserData] = useState(null);
+  const { id } = useParams(); // ID del usuario a editar
+  const [userData, setUserData] = useState(null); // Datos del usuario a editar
   const [loading, setLoading] = useState(true);
-  const [isLocalUser, setIsLocalUser] = useState(false);
-  const [allUsers, setAllUsers] = useState([]);
+  const [isLocalUser, setIsLocalUser] = useState(false); // Para usuarios con  un ID mayor a 10
+  const [allUsers, setAllUsers] = useState([]); // Todos los usuarios (API y LocalStorage)
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Función para obtener los datos del usuario
     const fetchData = async () => {
       try {
         const userId = parseInt(id);
@@ -27,7 +28,7 @@ const EditUserPage = () => {
           return;
         }
 
-
+        // Verificar si el usuario es local o de la API
         if (userId > 10) {
           setIsLocalUser(true);
           const localUser = localUsers.find(u => u.id === userId);
@@ -52,12 +53,14 @@ const EditUserPage = () => {
     fetchData();
   }, [id, navigate]);
 
+  // Función para manejar la actualización del usuario
   const handleUserUpdated = (updatedUser) => {
     setTimeout(() => navigate("/users"), 1000);
   };
 
   if (loading) return <p className="text-center mt-20">Cargando...</p>;
 
+  // Si no hay datos del usuario, redirigir a la lista de usuarios
   return (
     <div className="p-6 mt-20 bg-gradient-to-br from-indigo-100 to-blue-200 min-h-screen">
       <div className="max-w-xl mx-auto bg-white/70 backdrop-blur-md shadow-2xl rounded-3xl p-8 animate-fade-in">

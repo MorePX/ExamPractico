@@ -5,10 +5,12 @@ import API_URL from '../services/api';
 
 const CreateUserPage = () => {
   const navigate = useNavigate();
-  const [apiUsers, setApiUsers] = useState([]);
-  const [localUsers, setLocalUsers] = useState([]);
+  const [apiUsers, setApiUsers] = useState([]); // Estado para usuarios de la API
+  const [localUsers, setLocalUsers] = useState([]); // Estado para usuarios del localStorage
 
+  // Cargar usuarios desde la API y localStorage al montar el componente
   useEffect(() => {
+    // Función para obtener usuarios de la API y localStorage
     const fetchUsers = async () => {
       try {
         const res = await API_URL.get("/users");
@@ -16,14 +18,14 @@ const CreateUserPage = () => {
       } catch (error) {
         console.error("Error fetching API users:", error);
       }
-      const usersFromStorage = JSON.parse(localStorage.getItem("users")) || [];
+      const usersFromStorage = JSON.parse(localStorage.getItem("users")) || []; // Obtener usuarios del localStorage
       setLocalUsers(usersFromStorage);
     };
 
     fetchUsers();
   }, []);
 
-  const allUsers = [...apiUsers, ...localUsers];
+  const allUsers = [...apiUsers, ...localUsers]; // Combinar usuarios de la API y localStorage
 
   return (
     <div className="p-6 mt-20 bg-gradient-to-br from-indigo-100 to-blue-200 min-h-screen">

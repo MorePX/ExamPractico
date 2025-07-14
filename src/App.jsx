@@ -10,10 +10,12 @@ import { auth } from './services/auth';
 import { useEffect } from 'react';
 import userData from './data/user.json'; // Asegúrate de importar los datos de usuario
 
+// AppWrapper para manejar la lógica de autenticación y rutas
 const AppWrapper = () => {
-  const user = auth.getCurrentUser();
+  const user = auth.getCurrentUser(); // Obtener el usuario actual desde el servicio de autenticación
   const location = useLocation();
 
+  // Cargar usuarios predeterminados al localStorage
   useEffect(() => {
     // Cargar usuarios predeterminados al localStorage si no existen
     if (!localStorage.getItem('defaultUsers')) {
@@ -24,7 +26,7 @@ const AppWrapper = () => {
   const isLoggedIn = !!user;
   const hideNavbarPaths = ['/login', '/welcome'];
 
-  const shouldShowNavbar = isLoggedIn && !hideNavbarPaths.includes(location.pathname);
+  const shouldShowNavbar = isLoggedIn && !hideNavbarPaths.includes(location.pathname); // Determinar si se debe mostrar la barra de navegación
 
   return (
     <>
